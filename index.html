@@ -292,7 +292,7 @@
 
         .forgiveness-fill {
             height: 100%;
-            width: 30%;
+            width: 0%; /* Changed from 30% to 0% */
             background: linear-gradient(90deg, var(--love-pink), var(--love-red));
             border-radius: 25px;
             display: flex;
@@ -695,7 +695,7 @@
                     
                     <div class="forgiveness-meter">
                         <div class="forgiveness-fill" id="forgivenessFill">
-                            Hope
+                            0%
                         </div>
                     </div>
                     
@@ -826,10 +826,12 @@
         const messagesRef = database.ref('messages');
         const forgivenessRef = database.ref('forgiveness');
         const sliderHistoryRef = database.ref('sliderHistory');
-        const notificationsRef = database.ref('notifications');
+
+        // ==================== GLOBAL VARIABLES ====================
+        let forgivenessLevel = 0; // CHANGED: Default value set to 0
+        let isInitialLoad = true;
 
         // ==================== NOTIFICATION SYSTEM ====================
-        // Create notification container
         const notificationContainer = document.createElement('div');
         notificationContainer.id = 'notificationContainer';
         notificationContainer.style.cssText = `
@@ -845,6 +847,8 @@
         document.body.appendChild(notificationContainer);
 
         function showNotification(title, message, type = 'message') {
+            console.log('📢 Showing notification:', title, message);
+            
             const notificationId = 'notif-' + Date.now();
             
             const notification = document.createElement('div');
@@ -865,7 +869,7 @@
                 overflow: hidden;
             `;
             
-            const icon = type === 'message' ? 'fa-envelope' : 
+            const icon = type === 'message' ? 'fa-paper-plane' : 
                         type === 'forgiveness' ? 'fa-heart' : 'fa-bell';
             
             notification.innerHTML = `
@@ -885,7 +889,7 @@
             
             setTimeout(() => {
                 closeNotification(notificationId);
-            }, 8000);
+            }, 5000);
             
             playNotificationSound();
         }
@@ -933,7 +937,6 @@
             heart.style.top = '50%';
             document.body.appendChild(heart);
             
-            // Remove after animation
             setTimeout(() => {
                 heart.remove();
             }, 3000);
@@ -947,14 +950,12 @@
             heart.style.top = '50%';
             document.body.appendChild(heart);
             
-            // Remove after animation
             setTimeout(() => {
                 heart.remove();
             }, 4000);
         }
 
         // ==================== SLIDER SYSTEM ====================
-        let forgivenessLevel = 30;
         const forgivenessFill = document.getElementById('forgivenessFill');
         const increaseBtn = document.getElementById('increaseForgiveness');
         const decreaseBtn = document.getElementById('decreaseForgiveness');
@@ -962,10 +963,37 @@
         const closeModal = document.getElementById('closeModal');
         const closeModalBtn = document.getElementById('closeModalBtn');
 
+        function updateForgivenessMeterImmediately() {
+            forgivenessFill.style.width = `${forgivenessLevel}%`;
+            
+            if (forgivenessLevel === 0) {
+                forgivenessFill.textContent = "0%";
+                forgivenessFill.style.background = "linear-gradient(90deg, #ff8fa3, #ff4d6d)";
+            } else if (forgivenessLevel < 20) {
+                forgivenessFill.textContent = "Angry";
+                forgivenessFill.style.background = "linear-gradient(90deg, #ff8fa3, #ff4d6d)";
+            } else if (forgivenessLevel < 40) {
+                forgivenessFill.textContent = "Upset";
+                forgivenessFill.style.background = "linear-gradient(90deg, #ffb3c1, #ff8fa3)";
+            } else if (forgivenessLevel < 60) {
+                forgivenessFill.textContent = "Thinking";
+                forgivenessFill.style.background = "linear-gradient(90deg, #ffccd5, #ffb3c1)";
+            } else if (forgivenessLevel < 80) {
+                forgivenessFill.textContent = "Considering";
+                forgivenessFill.style.background = "linear-gradient(90deg, #b388eb, #9d5fe9)";
+            } else {
+                forgivenessFill.textContent = "Forgiven!";
+                forgivenessFill.style.background = "linear-gradient(90deg, #9d5fe9, #7b3fe4)";
+            }
+        }
+
         function updateForgivenessMeter() {
             forgivenessFill.style.width = `${forgivenessLevel}%`;
             
-            if (forgivenessLevel < 20) {
+            if (forgivenessLevel === 0) {
+                forgivenessFill.textContent = "0%";
+                forgivenessFill.style.background = "linear-gradient(90deg, #ff8fa3, #ff4d6d)";
+            } else if (forgivenessLevel < 20) {
                 forgivenessFill.textContent = "Angry";
                 forgivenessFill.style.background = "linear-gradient(90deg, #ff8fa3, #ff4d6d)";
             } else if (forgivenessLevel < 40) {
@@ -982,7 +1010,11 @@
                 forgivenessFill.style.background = "linear-gradient(90deg, #9d5fe9, #7b3fe4)";
             }
             
-            // Save to Firebase - CURRENT LEVEL
+            // LocalStorage mein save karo
+            localStorage.setItem('forgivenessLevel', forgivenessLevel);
+            localStorage.setItem('lastSave', Date.now());
+            
+            // Firebase mein save karo
             forgivenessRef.set({
                 level: forgivenessLevel,
                 lastUpdated: new Date().toLocaleString(),
@@ -990,23 +1022,16 @@
                 timestamp: Date.now()
             });
             
-            // Save to SLIDER HISTORY - ALAG ALAG
-            sliderHistoryRef.push({
-                level: forgivenessLevel,
-                text: forgivenessFill.textContent,
-                timestamp: new Date().toLocaleString(),
-                action: 'slider_changed',
-                date: Date.now()
-            });
-            
-            // Save notification
-            notificationsRef.push({
-                type: 'forgiveness',
-                level: forgivenessLevel,
-                text: forgivenessFill.textContent,
-                timestamp: new Date().toLocaleString(),
-                action: 'slider_changed'
-            });
+            // Slider history mein save karo
+            if (!isInitialLoad) {
+                sliderHistoryRef.push({
+                    level: forgivenessLevel,
+                    text: forgivenessFill.textContent,
+                    timestamp: new Date().toLocaleString(),
+                    action: forgivenessLevel > 0 ? 'increase' : 'decrease',
+                    date: Date.now()
+                });
+            }
             
             if (forgivenessLevel >= 100) {
                 showForgivenessModal();
@@ -1019,16 +1044,47 @@
             if (forgivenessLevel > 100) forgivenessLevel = 100;
             updateForgivenessMeter();
             
-            // BIG HEART ANIMATION
             createBigHeart();
             createConfetti();
             
-            // Show notification
-            showNotification(
-                'She Forgave You! 💖',
-                `Forgiveness increased to ${forgivenessLevel}%`,
-                'forgiveness'
-            );
+            // Romantic notifications based on forgiveness level
+            if (forgivenessLevel >= 100) {
+                showNotification(
+                    'You Have My Heart 💝',
+                    'I forgive you completely. My heart is yours forever.',
+                    'forgiveness'
+                );
+            } else if (forgivenessLevel >= 80) {
+                showNotification(
+                    'My Heart Is Softening 💓',
+                    'I can feel the love returning. Keep going, my love.',
+                    'forgiveness'
+                );
+            } else if (forgivenessLevel >= 60) {
+                showNotification(
+                    'Starting To Heal 💗',
+                    'Your words are touching my heart. I want to forgive you.',
+                    'forgiveness'
+                );
+            } else if (forgivenessLevel >= 40) {
+                showNotification(
+                    'Feeling Your Love 💕',
+                    'I can see you\'re trying. My anger is fading.',
+                    'forgiveness'
+                );
+            } else if (forgivenessLevel >= 20) {
+                showNotification(
+                    'Small Steps Toward Us 💞',
+                    'I appreciate your effort. My heart is listening.',
+                    'forgiveness'
+                );
+            } else {
+                showNotification(
+                    'I See Your Effort 💘',
+                    'Every apology counts. Keep showing me your love.',
+                    'forgiveness'
+                );
+            }
         });
 
         decreaseBtn.addEventListener('click', () => {
@@ -1036,18 +1092,15 @@
             if (forgivenessLevel < 0) forgivenessLevel = 0;
             updateForgivenessMeter();
             
-            // BROKEN HEART ANIMATION
             createBrokenHeart();
             
-            // Show notification
             showNotification(
-                'She Needs Time 💔',
-                `Forgiveness decreased to ${forgivenessLevel}%`,
+                'My Heart Still Hurts 💔',
+                'I need more time and more love from you.',
                 'forgiveness'
             );
         });
 
-        // Show forgiveness modal
         function showForgivenessModal() {
             modal.style.display = 'flex';
         }
@@ -1084,36 +1137,27 @@
             const messageData = {
                 text: message,
                 timestamp: new Date().toLocaleString(),
-                sender: 'her'
+                sender: 'her',
+                date: Date.now()
             };
             
             messagesRef.push(messageData)
                 .then(() => {
-                    // Save notification
-                    notificationsRef.push({
-                        type: 'message',
-                        text: message.substring(0, 50) + (message.length > 50 ? '...' : ''),
-                        timestamp: new Date().toLocaleString()
-                    });
-                    
-                    sendMessageBtn.innerHTML = '<i class="fas fa-check"></i> Sent!';
-                    sendMessageBtn.style.background = 'linear-gradient(45deg, #2ecc71, #27ae60)';
-                    
-                    // Show notification
                     showNotification(
-                        'New Message! 💌',
-                        'She sent you a message',
+                        'Message Sent! 💌',
+                        'Your message has been sent successfully!',
                         'message'
                     );
+                    
+                    sendMessageBtn.innerHTML = '<i class="fas fa-check"></i> Sent Successfully!';
+                    sendMessageBtn.style.background = 'linear-gradient(45deg, #2ecc71, #27ae60)';
                     
                     setTimeout(() => {
                         sendMessageBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Love';
                         sendMessageBtn.disabled = false;
                         sendMessageBtn.style.background = 'linear-gradient(45deg, var(--love-purple), #8a4fff)';
                         loveMessage.value = '';
-                        
-                        alert('Thank you for your message, my love. ❤️');
-                    }, 3000);
+                    }, 2000);
                 })
                 .catch((error) => {
                     alert('Error sending message. Please try again.');
@@ -1124,7 +1168,6 @@
         });
 
         // ==================== OTHER FUNCTIONS ====================
-        // Create floating hearts
         function createFloatingHearts() {
             const heartsContainer = document.getElementById('heartsContainer');
             const heartCount = 25;
@@ -1146,7 +1189,6 @@
             }
         }
 
-        // Love timer
         let seconds = 0;
         const loveTimer = document.getElementById('loveTimer');
         
@@ -1155,7 +1197,6 @@
             loveTimer.textContent = seconds;
         }, 1000);
 
-        // Create confetti effect
         function createConfetti() {
             const confettiContainer = document.getElementById('confettiContainer');
             const confettiCount = 150;
@@ -1213,9 +1254,9 @@
                 <button id="closeAdmin" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--love-red);">&times;</button>
             </div>
             <div style="margin-bottom: 15px;">
-                <h4>Current Forgiveness: <span id="adminForgiveness">30%</span></h4>
+                <h4>Current Forgiveness: <span id="adminForgiveness">0%</span></h4>
                 <div style="background: #ffe6ea; height: 20px; border-radius: 10px; margin: 10px 0;">
-                    <div id="adminForgivenessBar" style="height: 100%; width: 30%; background: var(--love-red); border-radius: 10px;"></div>
+                    <div id="adminForgivenessBar" style="height: 100%; width: 0%; background: var(--love-red); border-radius: 10px;"></div>
                 </div>
             </div>
             <div style="margin-bottom: 15px;">
@@ -1261,7 +1302,6 @@
         
         document.body.appendChild(adminButton);
         
-        // Password protection
         let passwordAttempts = 0;
         const CORRECT_PASSWORD = "love123";
         
@@ -1290,7 +1330,6 @@
         document.getElementById('refreshAdmin').addEventListener('click', loadAdminData);
         
         function loadAdminData() {
-            // Load forgiveness data
             forgivenessRef.once('value').then((snapshot) => {
                 if (snapshot.exists()) {
                     const data = snapshot.val();
@@ -1301,7 +1340,6 @@
                 }
             });
             
-            // Load slider history
             sliderHistoryRef.once('value').then((snapshot) => {
                 const sliderHistoryContainer = document.getElementById('sliderHistory');
                 const sliderHistoryCount = document.getElementById('sliderHistoryCount');
@@ -1313,11 +1351,10 @@
                     sliderHistoryCount.textContent = historyArray.length;
                     sliderHistoryContainer.innerHTML = '';
                     
-                    // Sort by timestamp (newest first)
                     historyArray.sort((a, b) => b.date - a.date);
                     
                     historyArray.forEach((item, index) => {
-                        if (index < 5) { // Show only last 5 changes
+                        if (index < 5) {
                             const historyItem = document.createElement('div');
                             historyItem.style.cssText = `
                                 background: ${index % 2 === 0 ? '#fff' : '#f5f5f5'};
@@ -1352,7 +1389,6 @@
                 }
             });
             
-            // Load messages
             messagesRef.once('value').then((snapshot) => {
                 const messagesContainer = document.getElementById('adminMessages');
                 const messageCountElement = document.getElementById('messageCount');
@@ -1390,48 +1426,48 @@
             });
         }
 
-        // ==================== FIREBASE LISTENERS ====================
-        messagesRef.on('child_added', (snapshot) => {
-            const message = snapshot.val();
-            
-            showNotification(
-                'New Message from Her! 💌',
-                message.text.length > 50 ? message.text.substring(0, 50) + '...' : message.text,
-                'message'
-            );
-            
-            if (adminPanel.style.display === 'block') {
-                loadAdminData();
-            }
-        });
-
         forgivenessRef.on('value', (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.val();
-                const currentForgiveness = document.getElementById('adminForgiveness');
-                
-                if (currentForgiveness && data.level) {
-                    currentForgiveness.textContent = data.level + '%';
-                    document.getElementById('adminForgivenessBar').style.width = data.level + '%';
+                if (data && data.level !== undefined) {
+                    const currentForgiveness = document.getElementById('adminForgiveness');
+                    if (currentForgiveness) {
+                        currentForgiveness.textContent = data.level + '%';
+                        document.getElementById('adminForgivenessBar').style.width = data.level + '%';
+                    }
                 }
             }
         });
 
-        // ==================== INITIALIZATION ====================
+        // ==================== INITIALIZATION - AUTO RESET TO 0% ====================
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('📱 Page loaded, initializing...');
+            
             createFloatingHearts();
             
-            // Load forgiveness data from Firebase
-            forgivenessRef.once('value').then((snapshot) => {
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    if (data.level) {
-                        forgivenessLevel = data.level;
-                    }
-                }
-                updateForgivenessMeter();
+            // AUTO RESET: Always start at 0%
+            forgivenessLevel = 0;
+            
+            // Clear localStorage
+            localStorage.removeItem('forgivenessLevel');
+            localStorage.removeItem('lastSave');
+            
+            // Update UI immediately
+            updateForgivenessMeterImmediately();
+            
+            // Save reset value to Firebase
+            forgivenessRef.set({
+                level: 0,
+                lastUpdated: new Date().toLocaleString(),
+                text: "0%",
+                timestamp: Date.now()
             });
             
+            // Mark initial load as complete
+            isInitialLoad = false;
+            console.log('✅ Initial load complete - Reset to 0%');
+            
+            // Fade in animations
             const cards = document.querySelectorAll('.fade-in');
             cards.forEach((card, index) => {
                 card.style.animationDelay = `${index * 0.2}s`;
@@ -1448,16 +1484,13 @@
                 createConfetti();
             });
             
-            setTimeout(() => {
-                showNotification(
-                    'System Active! 🔔',
-                    'You will receive notifications when she sends messages or changes forgiveness level.',
-                    'info'
-                );
-            }, 2000);
+            console.log('🔑 Admin Panel: Click the eye button at bottom-left');
+            console.log('🔐 Password: love123');
             
-            console.log('Admin Panel: Click the eye button at bottom-left');
-            console.log('Password: love123');
+            window.addEventListener('beforeunload', () => {
+                localStorage.setItem('forgivenessLevel', forgivenessLevel);
+                localStorage.setItem('lastSave', Date.now());
+            });
         });
     </script>
 </body>
