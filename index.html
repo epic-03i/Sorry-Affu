@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Poppins:wght@300;400;500;600&family=Great+Vibes&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDK v9 (compatible) -->
+    <!-- Firebase SDK v9 -->
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-database-compat.js"></script>
     
@@ -41,153 +41,6 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-        }
-
-        /* Notification System - YOUR VIEW */
-        .notification-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 350px;
-        }
-
-        .notification {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            border-left: 5px solid var(--love-red);
-            transform: translateX(400px);
-            transition: transform 0.5s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-        }
-
-        .notification-icon {
-            font-size: 1.8rem;
-            color: var(--love-red);
-        }
-
-        .notification-content h4 {
-            color: var(--love-dark);
-            margin-bottom: 5px;
-            font-size: 1.1rem;
-        }
-
-        .notification-content p {
-            color: #666;
-            font-size: 0.95rem;
-        }
-
-        .notification-close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
-            color: #999;
-            cursor: pointer;
-            font-size: 1.2rem;
-        }
-
-        /* Admin Panel - YOUR PRIVATE VIEW */
-        .admin-panel {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 9000;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 320px;
-            max-height: 400px;
-            overflow-y: auto;
-            display: none;
-        }
-
-        .admin-panel.show {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--love-pink);
-        }
-
-        .admin-header h3 {
-            color: var(--love-dark);
-            font-size: 1.3rem;
-        }
-
-        .admin-toggle {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: var(--love-red);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            font-size: 1.5rem;
-            cursor: pointer;
-            z-index: 9001;
-            box-shadow: 0 5px 15px rgba(255, 77, 109, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .message-item {
-            background: #f9f9f9;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-left: 3px solid var(--love-purple);
-        }
-
-        .message-time {
-            font-size: 0.8rem;
-            color: #888;
-            margin-bottom: 5px;
-        }
-
-        .message-text {
-            color: #333;
-            font-size: 0.95rem;
-        }
-
-        .forgiveness-level {
-            background: #e8f4ff;
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            border: 2px solid var(--love-purple);
-        }
-
-        .level-display {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--love-dark);
-            text-align: center;
-            margin: 10px 0;
         }
 
         /* Header Styles */
@@ -710,37 +563,6 @@
     </style>
 </head>
 <body>
-    <!-- Notification Container - YOUR VIEW -->
-    <div class="notification-container" id="notificationContainer"></div>
-
-    <!-- Admin Toggle Button - YOUR PRIVATE -->
-    <button class="admin-toggle" id="adminToggle">
-        <i class="fas fa-eye"></i>
-    </button>
-
-    <!-- Admin Panel - YOUR PRIVATE VIEW -->
-    <div class="admin-panel" id="adminPanel">
-        <div class="admin-header">
-            <h3><i class="fas fa-user-secret"></i> Admin Panel</h3>
-            <button class="notification-close" id="closeAdmin">&times;</button>
-        </div>
-        
-        <div class="forgiveness-level">
-            <h4>Current Forgiveness Level</h4>
-            <div class="level-display" id="adminForgivenessLevel">30%</div>
-            <div id="adminForgivenessText">Hope</div>
-        </div>
-        
-        <h4>Recent Messages</h4>
-        <div id="adminMessages">
-            <p style="color: #888; text-align: center; padding: 20px;">No messages yet...</p>
-        </div>
-        
-        <button class="btn" id="refreshAdmin" style="margin-top: 15px; width: 100%;">
-            <i class="fas fa-sync-alt"></i> Refresh
-        </button>
-    </div>
-
     <div class="container">
         <!-- Header with Love Theme -->
         <header>
@@ -934,200 +756,33 @@
         // Firebase references
         const messagesRef = database.ref('messages');
         const forgivenessRef = database.ref('forgiveness');
-        const sliderRef = database.ref('slider');
 
-        // ==================== GLOBAL VARIABLES ====================
+        // ==================== EXISTING CODE (NO CHANGES) ====================
+        // Create floating hearts
+        function createFloatingHearts() {
+            const heartsContainer = document.getElementById('heartsContainer');
+            const heartCount = 25;
+            
+            for (let i = 0; i < heartCount; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'floating-heart';
+                heart.innerHTML = '❤';
+                
+                // Random position
+                const left = Math.random() * 100;
+                const delay = Math.random() * 8;
+                const duration = 8 + Math.random() * 5;
+                
+                heart.style.left = `${left}%`;
+                heart.style.animationDelay = `${delay}s`;
+                heart.style.animationDuration = `${duration}s`;
+                
+                heartsContainer.appendChild(heart);
+            }
+        }
+
+        // Forgiveness meter functionality
         let forgivenessLevel = 30;
-        let currentForgivenessData = null;
-        let messageCount = 0;
-
-        // ==================== NOTIFICATION SYSTEM ====================
-        function showNotification(title, message, type = 'info') {
-            const notificationContainer = document.getElementById('notificationContainer');
-            const notificationId = 'notif-' + Date.now();
-            
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.id = notificationId;
-            
-            const icon = type === 'message' ? 'fa-envelope' : 
-                        type === 'forgiveness' ? 'fa-heart' : 'fa-bell';
-            
-            notification.innerHTML = `
-                <i class="fas ${icon} notification-icon"></i>
-                <div class="notification-content">
-                    <h4>${title}</h4>
-                    <p>${message}</p>
-                </div>
-                <button class="notification-close" onclick="closeNotification('${notificationId}')">&times;</button>
-            `;
-            
-            notificationContainer.appendChild(notification);
-            
-            // Show notification with animation
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 10);
-            
-            // Auto remove after 10 seconds
-            setTimeout(() => {
-                closeNotification(notificationId);
-            }, 10000);
-            
-            // Play notification sound (optional)
-            playNotificationSound();
-        }
-
-        function closeNotification(id) {
-            const notification = document.getElementById(id);
-            if (notification) {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 500);
-            }
-        }
-
-        function playNotificationSound() {
-            // Simple notification sound using Web Audio API
-            try {
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                
-                oscillator.frequency.value = 800;
-                oscillator.type = 'sine';
-                
-                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-                
-                oscillator.start(audioContext.currentTime);
-                oscillator.stop(audioContext.currentTime + 0.5);
-            } catch (e) {
-                console.log("Audio context not supported");
-            }
-        }
-
-        // ==================== ADMIN PANEL ====================
-        const adminToggle = document.getElementById('adminToggle');
-        const adminPanel = document.getElementById('adminPanel');
-        const closeAdmin = document.getElementById('closeAdmin');
-        const refreshAdmin = document.getElementById('refreshAdmin');
-        const adminForgivenessLevel = document.getElementById('adminForgivenessLevel');
-        const adminForgivenessText = document.getElementById('adminForgivenessText');
-        const adminMessages = document.getElementById('adminMessages');
-
-        adminToggle.addEventListener('click', () => {
-            adminPanel.classList.toggle('show');
-            if (adminPanel.classList.contains('show')) {
-                adminToggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
-                loadAdminData();
-            } else {
-                adminToggle.innerHTML = '<i class="fas fa-eye"></i>';
-            }
-        });
-
-        closeAdmin.addEventListener('click', () => {
-            adminPanel.classList.remove('show');
-            adminToggle.innerHTML = '<i class="fas fa-eye"></i>';
-        });
-
-        refreshAdmin.addEventListener('click', loadAdminData);
-
-        function loadAdminData() {
-            // Load forgiveness data
-            forgivenessRef.once('value').then((snapshot) => {
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-                    currentForgivenessData = data;
-                    
-                    if (data.level) {
-                        adminForgivenessLevel.textContent = data.level + '%';
-                        adminForgivenessText.textContent = getForgivenessText(data.level);
-                        
-                        // Update local forgiveness level
-                        forgivenessLevel = data.level;
-                        updateForgivenessMeter();
-                    }
-                }
-            });
-
-            // Load messages
-            messagesRef.once('value').then((snapshot) => {
-                if (snapshot.exists()) {
-                    const messages = snapshot.val();
-                    adminMessages.innerHTML = '';
-                    
-                    Object.keys(messages).forEach((key) => {
-                        const msg = messages[key];
-                        const messageItem = document.createElement('div');
-                        messageItem.className = 'message-item';
-                        messageItem.innerHTML = `
-                            <div class="message-time">
-                                <i class="far fa-clock"></i> ${msg.timestamp || 'Just now'}
-                            </div>
-                            <div class="message-text">${msg.text}</div>
-                        `;
-                        adminMessages.appendChild(messageItem);
-                    });
-                } else {
-                    adminMessages.innerHTML = '<p style="color: #888; text-align: center; padding: 20px;">No messages yet...</p>';
-                }
-            });
-        }
-
-        // ==================== FIREBASE LISTENERS ====================
-        // Listen for new messages
-        messagesRef.on('child_added', (snapshot) => {
-            const message = snapshot.val();
-            messageCount++;
-            
-            // Show notification to you
-            showNotification(
-                'New Message from Her!', 
-                message.text.length > 50 ? message.text.substring(0, 50) + '...' : message.text,
-                'message'
-            );
-            
-            // Update admin panel if open
-            if (adminPanel.classList.contains('show')) {
-                loadAdminData();
-            }
-        });
-
-        // Listen for forgiveness level changes
-        forgivenessRef.on('value', (snapshot) => {
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                if (data.level !== currentForgivenessData?.level) {
-                    // Show notification about forgiveness change
-                    showNotification(
-                        'Forgiveness Level Updated!',
-                        `Her forgiveness level is now ${data.level}% (${getForgivenessText(data.level)})`,
-                        'forgiveness'
-                    );
-                    
-                    // Update admin panel
-                    if (adminPanel.classList.contains('show')) {
-                        adminForgivenessLevel.textContent = data.level + '%';
-                        adminForgivenessText.textContent = getForgivenessText(data.level);
-                    }
-                    
-                    // Update local forgiveness level
-                    forgivenessLevel = data.level;
-                    updateForgivenessMeter();
-                    
-                    currentForgivenessData = data;
-                }
-            }
-        });
-
-        // ==================== FORGIVENESS SYSTEM ====================
         const forgivenessFill = document.getElementById('forgivenessFill');
         const increaseBtn = document.getElementById('increaseForgiveness');
         const decreaseBtn = document.getElementById('decreaseForgiveness');
@@ -1135,28 +790,24 @@
         const closeModal = document.getElementById('closeModal');
         const closeModalBtn = document.getElementById('closeModalBtn');
 
-        function getForgivenessText(level) {
-            if (level < 20) return "Angry";
-            if (level < 40) return "Upset";
-            if (level < 60) return "Thinking";
-            if (level < 80) return "Considering";
-            return "Forgiven!";
-        }
-
         function updateForgivenessMeter() {
             forgivenessFill.style.width = `${forgivenessLevel}%`;
-            forgivenessFill.textContent = getForgivenessText(forgivenessLevel);
             
-            // Update background color based on level
+            // Update text based on level
             if (forgivenessLevel < 20) {
+                forgivenessFill.textContent = "Angry";
                 forgivenessFill.style.background = "linear-gradient(90deg, #ff8fa3, #ff4d6d)";
             } else if (forgivenessLevel < 40) {
+                forgivenessFill.textContent = "Upset";
                 forgivenessFill.style.background = "linear-gradient(90deg, #ffb3c1, #ff8fa3)";
             } else if (forgivenessLevel < 60) {
+                forgivenessFill.textContent = "Thinking";
                 forgivenessFill.style.background = "linear-gradient(90deg, #ffccd5, #ffb3c1)";
             } else if (forgivenessLevel < 80) {
+                forgivenessFill.textContent = "Considering";
                 forgivenessFill.style.background = "linear-gradient(90deg, #b388eb, #9d5fe9)";
             } else {
+                forgivenessFill.textContent = "Forgiven!";
                 forgivenessFill.style.background = "linear-gradient(90deg, #9d5fe9, #7b3fe4)";
             }
             
@@ -1164,19 +815,13 @@
             forgivenessRef.set({
                 level: forgivenessLevel,
                 lastUpdated: new Date().toLocaleString(),
-                text: getForgivenessText(forgivenessLevel)
+                text: forgivenessFill.textContent
             });
             
             // If forgiveness reaches 100%, show modal
             if (forgivenessLevel >= 100) {
                 showForgivenessModal();
                 createConfetti();
-                
-                // Save to Firebase as complete forgiveness
-                forgivenessRef.child('complete').set({
-                    completed: true,
-                    completedAt: new Date().toLocaleString()
-                });
             }
         }
 
@@ -1184,26 +829,12 @@
             forgivenessLevel += 10;
             if (forgivenessLevel > 100) forgivenessLevel = 100;
             updateForgivenessMeter();
-            
-            // Show notification to you
-            showNotification(
-                'She Forgave You!',
-                `Forgiveness level increased to ${forgivenessLevel}%`,
-                'forgiveness'
-            );
         });
 
         decreaseBtn.addEventListener('click', () => {
             forgivenessLevel -= 15;
             if (forgivenessLevel < 0) forgivenessLevel = 0;
             updateForgivenessMeter();
-            
-            // Show notification to you
-            showNotification(
-                'She Needs More Time',
-                `Forgiveness level decreased to ${forgivenessLevel}%`,
-                'forgiveness'
-            );
             
             // Create broken heart effect
             const brokenHeart = document.createElement('div');
@@ -1216,12 +847,35 @@
             brokenHeart.style.animation = 'fadeIn 0.5s ease';
             document.body.appendChild(brokenHeart);
             
+            // Remove after animation
             setTimeout(() => {
                 brokenHeart.remove();
             }, 2000);
         });
 
-        // ==================== MESSAGE SYSTEM ====================
+        // Show forgiveness modal
+        function showForgivenessModal() {
+            modal.style.display = 'flex';
+        }
+
+        // Close modal
+        closeModal.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+            createConfetti();
+        });
+
+        // Close modal if clicked outside
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        // Send message functionality - NOW WITH FIREBASE
         const sendMessageBtn = document.getElementById('sendMessage');
         const loveMessage = document.getElementById('loveMessage');
 
@@ -1240,8 +894,7 @@
             const messageData = {
                 text: message,
                 timestamp: new Date().toLocaleString(),
-                sender: 'her',
-                id: Date.now()
+                sender: 'her'
             };
             
             messagesRef.push(messageData)
@@ -1256,6 +909,8 @@
                         sendMessageBtn.disabled = false;
                         sendMessageBtn.style.background = 'linear-gradient(45deg, var(--love-purple), #8a4fff)';
                         loveMessage.value = '';
+                        
+                        alert('Thank you for your message, my love. ❤️ It has been saved!');
                     }, 3000);
                 })
                 .catch((error) => {
@@ -1267,26 +922,6 @@
                 });
         });
 
-        // ==================== OTHER FUNCTIONS ====================
-        function showForgivenessModal() {
-            modal.style.display = 'flex';
-        }
-
-        closeModal.addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
-
-        closeModalBtn.addEventListener('click', () => {
-            modal.style.display = 'none';
-            createConfetti();
-        });
-
-        window.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
-
         // Love timer
         let seconds = 0;
         const loveTimer = document.getElementById('loveTimer');
@@ -1295,28 +930,6 @@
             seconds++;
             loveTimer.textContent = seconds;
         }, 1000);
-
-        // Create floating hearts
-        function createFloatingHearts() {
-            const heartsContainer = document.getElementById('heartsContainer');
-            const heartCount = 25;
-            
-            for (let i = 0; i < heartCount; i++) {
-                const heart = document.createElement('div');
-                heart.className = 'floating-heart';
-                heart.innerHTML = '❤';
-                
-                const left = Math.random() * 100;
-                const delay = Math.random() * 8;
-                const duration = 8 + Math.random() * 5;
-                
-                heart.style.left = `${left}%`;
-                heart.style.animationDelay = `${delay}s`;
-                heart.style.animationDuration = `${duration}s`;
-                
-                heartsContainer.appendChild(heart);
-            }
-        }
 
         // Create confetti effect
         function createConfetti() {
@@ -1328,6 +941,7 @@
                 const confetti = document.createElement('div');
                 confetti.className = 'confetti';
                 
+                // Random properties
                 const color = colors[Math.floor(Math.random() * colors.length)];
                 const size = Math.random() * 15 + 5;
                 const left = Math.random() * 100;
@@ -1343,10 +957,160 @@
                 
                 confettiContainer.appendChild(confetti);
                 
+                // Remove after animation
                 setTimeout(() => {
                     confetti.remove();
                 }, (animationDuration + delay) * 1000);
             }
+        }
+
+        // ==================== ADMIN SECRET PANEL ====================
+        // Create secret admin panel (hidden)
+        const adminPanel = document.createElement('div');
+        adminPanel.id = 'adminPanel';
+        adminPanel.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            border: 2px solid var(--love-red);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            display: none;
+            z-index: 9999;
+            max-width: 400px;
+            max-height: 500px;
+            overflow-y: auto;
+        `;
+        
+        adminPanel.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="color: var(--love-dark);">
+                    <i class="fas fa-user-secret"></i> Admin Panel
+                </h3>
+                <button id="closeAdmin" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--love-red);">&times;</button>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <h4>Current Forgiveness: <span id="adminForgiveness">30%</span></h4>
+                <div style="background: #ffe6ea; height: 20px; border-radius: 10px; margin: 10px 0;">
+                    <div id="adminForgivenessBar" style="height: 100%; width: 30%; background: var(--love-red); border-radius: 10px;"></div>
+                </div>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <h4>Messages Received: <span id="messageCount">0</span></h4>
+            </div>
+            <div id="adminMessages" style="max-height: 300px; overflow-y: auto;">
+                <p style="color: #888; text-align: center;">No messages yet...</p>
+            </div>
+            <button id="refreshAdmin" style="margin-top: 15px; padding: 10px 20px; background: var(--love-purple); color: white; border: none; border-radius: 10px; cursor: pointer; width: 100%;">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        `;
+        
+        document.body.appendChild(adminPanel);
+        
+        // Create secret button to open admin panel
+        const adminButton = document.createElement('button');
+        adminButton.id = 'adminButton';
+        adminButton.innerHTML = '<i class="fas fa-eye"></i>';
+        adminButton.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--love-red);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 10000;
+            box-shadow: 0 5px 15px rgba(255, 77, 109, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+        
+        document.body.appendChild(adminButton);
+        
+        // Password protection
+        let passwordAttempts = 0;
+        const CORRECT_PASSWORD = "love123"; // You can change this
+        
+        adminButton.addEventListener('click', () => {
+            if (passwordAttempts >= 3) {
+                alert('Too many failed attempts. Please refresh the page.');
+                return;
+            }
+            
+            const password = prompt('Enter admin password:');
+            if (password === CORRECT_PASSWORD) {
+                adminPanel.style.display = 'block';
+                adminButton.style.display = 'none';
+                loadAdminData();
+            } else {
+                passwordAttempts++;
+                alert(`Incorrect password. Attempts remaining: ${3 - passwordAttempts}`);
+            }
+        });
+        
+        document.getElementById('closeAdmin').addEventListener('click', () => {
+            adminPanel.style.display = 'none';
+            adminButton.style.display = 'flex';
+        });
+        
+        document.getElementById('refreshAdmin').addEventListener('click', loadAdminData);
+        
+        function loadAdminData() {
+            // Load forgiveness data
+            forgivenessRef.once('value').then((snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    if (data.level) {
+                        document.getElementById('adminForgiveness').textContent = data.level + '%';
+                        document.getElementById('adminForgivenessBar').style.width = data.level + '%';
+                    }
+                }
+            });
+            
+            // Load messages
+            messagesRef.once('value').then((snapshot) => {
+                const messagesContainer = document.getElementById('adminMessages');
+                const messageCountElement = document.getElementById('messageCount');
+                
+                if (snapshot.exists()) {
+                    const messages = snapshot.val();
+                    const messagesArray = Object.values(messages);
+                    
+                    messageCountElement.textContent = messagesArray.length;
+                    messagesContainer.innerHTML = '';
+                    
+                    messagesArray.forEach((msg, index) => {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.style.cssText = `
+                            background: #f9f9f9;
+                            border-radius: 10px;
+                            padding: 10px;
+                            margin-bottom: 10px;
+                            border-left: 3px solid var(--love-purple);
+                        `;
+                        
+                        messageDiv.innerHTML = `
+                            <div style="font-size: 0.8rem; color: #888; margin-bottom: 5px;">
+                                <i class="far fa-clock"></i> ${msg.timestamp || 'Just now'}
+                            </div>
+                            <div>${msg.text}</div>
+                        `;
+                        
+                        messagesContainer.appendChild(messageDiv);
+                    });
+                } else {
+                    messagesContainer.innerHTML = '<p style="color: #888; text-align: center;">No messages yet...</p>';
+                    messageCountElement.textContent = '0';
+                }
+            });
         }
 
         // ==================== INITIALIZATION ====================
@@ -1383,17 +1147,9 @@
                 createConfetti();
             });
             
-            // Initial admin data load
-            loadAdminData();
-            
-            // Show welcome notification to you
-            setTimeout(() => {
-                showNotification(
-                    'System Active!',
-                    'You will receive notifications when she sends messages or changes forgiveness level.',
-                    'info'
-                );
-            }, 2000);
+            // Show admin panel instructions
+            console.log('Admin Panel: Click the eye button at bottom-left');
+            console.log('Password: love123');
         });
     </script>
 </body>
